@@ -25,8 +25,8 @@
       Loan Limit Approved:
     </p>
     <p id="loanLimit" class="text-3xl font-extrabold text-orange-500 mt-1">Ksh 0</p>
-    <p class="mt-2 text-sm text-gray-600">
-      Service Fee: <span class="font-semibold">6.2%</span>
+    <p id="serviceFee" class="mt-2 text-sm text-gray-600">
+      Service Fee: <span class="font-semibold">Ksh 0</span>
     </p>
     <p class="mt-4">
       Your loan request has been evaluated and approved. You can now proceed to select your desired amount, 
@@ -41,24 +41,53 @@
   </div>
 
   <script>
-    // Generate random loan limit with 80% chance below 5000
-    const minLoan = 1800;
-    const maxLoan = 7500;
-    let loanLimit;
-    if (Math.random() < 0.8) {
-      loanLimit = Math.floor(Math.random() * (5000 - minLoan + 1)) + minLoan;
-    } else {
-      loanLimit = Math.floor(Math.random() * (maxLoan - 5000 + 1)) + 5000;
+    // Function to generate loan amount between 700 and 2500 with last digit 0 or 5
+    function generateLoanAmount() {
+      const minLoan = 700;
+      const maxLoan = 2500;
+      
+      // Generate a random base amount
+      let baseAmount = Math.floor(Math.random() * (maxLoan - minLoan + 1)) + minLoan;
+      
+      // Ensure the last digit is 0 or 5
+      let lastDigit = baseAmount % 10;
+      
+      // Adjust to the nearest number ending with 0 or 5
+      if (lastDigit < 5) {
+        baseAmount = baseAmount - lastDigit; // makes it end with 0
+      } else {
+        baseAmount = baseAmount - (lastDigit - 5); // makes it end with 5
+      }
+      
+      // Ensure the amount is still within bounds
+      if (baseAmount < minLoan) {
+        baseAmount = minLoan + 5; // 705 is the smallest valid amount
+      } else if (baseAmount > maxLoan) {
+        baseAmount = maxLoan - (maxLoan % 5); // makes it the largest multiple of 5 <= maxLoan
+      }
+      
+      return baseAmount;
+    }
+    
+    // Generate random service fee between 50 and 75
+    function generateServiceFee() {
+      return Math.floor(Math.random() * (75 - 50 + 1)) + 50;
     }
 
-    // Store loan limit
-    localStorage.setItem('loanLimit', loanLimit);
+    // Generate loan amount and service fee
+    const loanAmount = generateLoanAmount();
+    const serviceFee = generateServiceFee();
+
+    // Store loan amount and service fee
+    localStorage.setItem('loanAmount', loanAmount);
+    localStorage.setItem('serviceFee', serviceFee);
 
     // Show loading, then approval
     setTimeout(() => {
       document.getElementById('loadingScreen').classList.add('hidden');
       document.getElementById('approvalMessage').classList.remove('hidden');
-      document.getElementById('loanLimit').textContent = `Ksh ${loanLimit.toLocaleString()}`;
+      document.getElementById('loanLimit').textContent = `Ksh ${loanAmount.toLocaleString()}`;
+      document.getElementById('serviceFee').innerHTML = `Service Fee: <span class="font-semibold">Ksh ${serviceFee.toLocaleString()}</span>`;
     }, 2500);
   </script>
 
