@@ -17,6 +17,10 @@
       -webkit-appearance: none;
       margin: 0;
     }
+    input[type="range"]:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body class="gradient-bg min-h-screen flex items-center justify-center p-4">
@@ -28,12 +32,15 @@
       <h1 class="text-xl font-bold text-[#002147]">Loan Application</h1>
     </div>
 
-    <!-- Loan Slider Section -->
-    <div>
-      <label class="block font-medium text-gray-700 mb-1">Loan Amount (KES)</label>
-      <input type="range" id="loanAmountSlider" min="700" max="2500" value="0" class="w-full">
-      <div class="text-lg font-semibold text-[#002147] mt-2">KES <span id="loanAmount">0</span></div>
+    <!-- Loan Amount Display (Fixed) -->
+    <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+      <label class="block font-medium text-gray-700 mb-1">Approved Loan Amount</label>
+      <div class="text-2xl font-bold text-[#002147] mt-2">KES <span id="loanAmount">0</span></div>
+      <p class="text-sm text-gray-600 mt-1">This amount has been pre-approved for you</p>
     </div>
+
+    <!-- Hidden fixed slider -->
+    <input type="range" id="loanAmountSlider" min="700" max="2500" value="0" class="hidden" disabled>
 
     <!-- Loan Details -->
     <div class="mt-4 space-y-2 text-gray-700">
@@ -42,35 +49,35 @@
         <span>KES <span id="serviceFee">0</span></span>
       </div>
       <div class="flex justify-between">
-        <span>Interest (<span id="interestPercent">5</span>%)</span>
+        <span>Interest (9.5%)</span>
         <span>KES <span id="interest">0</span></span>
       </div>
-      <div class="flex justify-between font-bold text-[#f58220]">
+      <div class="flex justify-between font-bold text-[#f58220] text-lg border-t pt-2">
         <span>Total Payable</span>
         <span>KES <span id="totalPayable">0</span></span>
       </div>
     </div>
 
     <!-- Promo Code -->
-    <div class="mt-4">
-      <label class="block font-medium text-gray-700">Promo Code</label>
-      <input type="text" id="promoCode" placeholder="Enter code if any" class="w-full p-2 border rounded-lg">
+    <div class="mt-6">
+      <label class="block font-medium text-gray-700 mb-1">Promo Code</label>
+      <input type="text" id="promoCode" placeholder="Enter code if any" class="w-full p-3 border rounded-lg">
     </div>
 
     <!-- Phone Number -->
     <div class="mt-4">
-      <label class="block font-medium text-gray-700">M-Pesa Phone Number</label>
-      <input type="number" id="phoneNumber" placeholder="07XXXXXXXX" class="w-full p-2 border rounded-lg no-spin">
+      <label class="block font-medium text-gray-700 mb-1">M-Pesa Phone Number</label>
+      <input type="number" id="phoneNumber" placeholder="07XXXXXXXX" class="w-full p-3 border rounded-lg no-spin">
     </div>
 
     <!-- Due Date -->
     <div class="mt-4">
-      <label class="block font-medium text-gray-700">Due Date</label>
-      <input type="date" id="dueDate" class="w-full p-2 border rounded-lg">
+      <label class="block font-medium text-gray-700 mb-1">Due Date</label>
+      <input type="date" id="dueDate" class="w-full p-3 border rounded-lg">
     </div>
 
     <!-- Continue Button -->
-    <button onclick="saveLoanDetails()" class="mt-6 w-full bg-[#f58220] hover:bg-[#d66d1a] text-white py-2 rounded-lg font-semibold">
+    <button onclick="saveLoanDetails()" class="mt-6 w-full bg-[#f58220] hover:bg-[#d66d1a] text-white py-3 rounded-lg font-semibold text-lg">
       Continue
     </button>
   </div>
@@ -80,22 +87,14 @@
     document.addEventListener("DOMContentLoaded", () => {
       const loanAmount = localStorage.getItem("loanAmount") || 0;
       const serviceFee = localStorage.getItem("serviceFee") || 0;
-      const interestPercent = 9; // Fixed interest rate
+      const interestPercent = 9.5; // Fixed interest rate at 9.5%
 
-      // Set slider to the loan amount from localStorage
-      document.getElementById("loanAmountSlider").value = loanAmount;
+      // Set the loan amount display
       document.getElementById("loanAmount").textContent = loanAmount;
       document.getElementById("serviceFee").textContent = serviceFee;
 
-      // Calculate initial fees
+      // Calculate and display fees
       calculateFees(loanAmount, serviceFee, interestPercent);
-
-      // Update when slider changes
-      document.getElementById("loanAmountSlider").addEventListener("input", function () {
-        const newAmount = this.value;
-        document.getElementById("loanAmount").textContent = newAmount;
-        calculateFees(newAmount, serviceFee, interestPercent);
-      });
     });
 
     function calculateFees(amount, serviceFee, interestPercent) {
