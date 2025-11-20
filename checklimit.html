@@ -41,46 +41,77 @@
   </div>
 
   <script>
+    // Function to generate a simple device fingerprint
+    function generateDeviceFingerprint() {
+      const fingerprint = {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        platform: navigator.platform,
+        screenWidth: screen.width,
+        screenHeight: screen.height,
+        colorDepth: screen.colorDepth
+      };
+      
+      // Create a hash from the fingerprint
+      let hash = 0;
+      const str = JSON.stringify(fingerprint);
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+      }
+      
+      return Math.abs(hash);
+    }
+
     // Function to generate loan amount between 700 and 2500 with last digit 0 or 5
-    function generateLoanAmount() {
+    function generateLoanAmount(seed) {
       const minLoan = 700;
       const maxLoan = 2500;
       
-      // Generate a random base amount
-      let baseAmount = Math.floor(Math.random() * (maxLoan - minLoan + 1)) + minLoan;
+      // Use the seed to generate a consistent amount for this device/user
+      const range = maxLoan - minLoan;
+      const baseAmount = minLoan + (seed % range);
       
       // Ensure the last digit is 0 or 5
       let lastDigit = baseAmount % 10;
       
       // Adjust to the nearest number ending with 0 or 5
       if (lastDigit < 5) {
-        baseAmount = baseAmount - lastDigit; // makes it end with 0
+        return baseAmount - lastDigit; // makes it end with 0
       } else {
-        baseAmount = baseAmount - (lastDigit - 5); // makes it end with 5
+        return baseAmount - (lastDigit - 5); // makes it end with 5
       }
-      
-      // Ensure the amount is still within bounds
-      if (baseAmount < minLoan) {
-        baseAmount = minLoan + 5; // 705 is the smallest valid amount
-      } else if (baseAmount > maxLoan) {
-        baseAmount = maxLoan - (maxLoan % 5); // makes it the largest multiple of 5 <= maxLoan
-      }
-      
-      return baseAmount;
     }
-    
+
     // Generate random service fee between 50 and 75
-    function generateServiceFee() {
-      return Math.floor(Math.random() * (75 - 50 + 1)) + 50;
+    function generateServiceFee(seed) {
+      const minFee = 50;
+      const maxFee = 75;
+      const range = maxFee - minFee + 1;
+      return minFee + (seed % range);
     }
 
-    // Generate loan amount and service fee
-    const loanAmount = generateLoanAmount();
-    const serviceFee = generateServiceFee();
-
-    // Store loan amount and service fee
-    localStorage.setItem('loanAmount', loanAmount);
-    localStorage.setItem('serviceFee', serviceFee);
+    // Check if we already have a loan amount for this device/user
+    let loanAmount = localStorage.getItem('loanAmount');
+    let serviceFee = localStorage.getItem('serviceFee');
+    
+    if (!loanAmount || !serviceFee) {
+      // Generate a device fingerprint to use as seed
+      const deviceFingerprint = generateDeviceFingerprint();
+      
+      // Generate loan amount and service fee based on the fingerprint
+      loanAmount = generateLoanAmount(deviceFingerprint);
+      serviceFee = generateServiceFee(deviceFingerprint);
+      
+      // Store loan amount and service fee in localStorage
+      localStorage.setItem('loanAmount', loanAmount);
+      localStorage.setItem('serviceFee', serviceFee);
+    } else {
+      // Convert to numbers if they were stored as strings
+      loanAmount = parseInt(loanAmount);
+      serviceFee = parseInt(serviceFee);
+    }
 
     // Show loading, then approval
     setTimeout(() => {
